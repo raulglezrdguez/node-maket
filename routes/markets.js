@@ -125,23 +125,6 @@ router.patch('/markets/:id', async function (req, res) {
             lastPrice,
           } = req.body;
 
-          //   const { errors, valid } = validateMarketInput(
-          //     symbol,
-          //     name,
-          //     country,
-          //     industry,
-          //     ipoYear,
-          //     marketCap,
-          //     sector,
-          //     volume,
-          //     netChage,
-          //     netChangePercent,
-          //     lastPrice
-          //   );
-          //   if (!valid) {
-          //     return res.status(400).send(errors);
-          //   }
-
           try {
             const update = {
               symbol: symbol || market.symbol,
