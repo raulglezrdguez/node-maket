@@ -125,36 +125,36 @@ router.patch('/markets/:id', async function (req, res) {
             lastPrice,
           } = req.body;
 
-          const { errors, valid } = validateMarketInput(
-            symbol,
-            name,
-            country,
-            industry,
-            ipoYear,
-            marketCap,
-            sector,
-            volume,
-            netChage,
-            netChangePercent,
-            lastPrice
-          );
-          if (!valid) {
-            return res.status(400).send(errors);
-          }
+          //   const { errors, valid } = validateMarketInput(
+          //     symbol,
+          //     name,
+          //     country,
+          //     industry,
+          //     ipoYear,
+          //     marketCap,
+          //     sector,
+          //     volume,
+          //     netChage,
+          //     netChangePercent,
+          //     lastPrice
+          //   );
+          //   if (!valid) {
+          //     return res.status(400).send(errors);
+          //   }
 
           try {
             const update = {
-              symbol,
-              name,
-              country,
-              industry,
-              ipoYear,
-              marketCap,
-              sector,
-              volume,
-              netChage,
-              netChangePercent,
-              lastPrice,
+              symbol: symbol || market.symbol,
+              name: name || market.name,
+              country: country || market.country,
+              industry: industry || market.industry,
+              ipoYear: ipoYear || market.ipoYear,
+              marketCap: marketCap || market.marketCap,
+              sector: sector || market.sector,
+              volume: volume || market.volume,
+              netChage: netChage || market.netChage,
+              netChangePercent: netChangePercent || market.netChangePercent,
+              lastPrice: lastPrice || market.lastPrice,
               updatedAt: new Date().toISOString(),
             };
 
@@ -214,39 +214,22 @@ router.put('/markets/:id', async function (req, res) {
           lastPrice,
         } = req.body;
 
-        const { errors, valid } = validateMarketInput(
-          symbol,
-          name,
-          country,
-          industry,
-          ipoYear,
-          marketCap,
-          sector,
-          volume,
-          netChage,
-          netChangePercent,
-          lastPrice
-        );
-        if (!valid) {
-          return res.status(400).send(errors);
-        }
-
         let market = await Market.findOne({ id });
         if (market) {
           // update
           try {
             const update = {
-              symbol,
-              name,
-              country,
-              industry,
-              ipoYear,
-              marketCap,
-              sector,
-              volume,
-              netChage,
-              netChangePercent,
-              lastPrice,
+              symbol: symbol || market.symbol,
+              name: name || market.name,
+              country: country || market.country,
+              industry: industry || market.industry,
+              ipoYear: ipoYear || market.ipoYear,
+              marketCap: marketCap || market.marketCap,
+              sector: sector || market.sector,
+              volume: volume || market.volume,
+              netChage: netChage || market.netChage,
+              netChangePercent: netChangePercent || market.netChangePercent,
+              lastPrice: lastPrice || market.lastPrice,
               updatedAt: new Date().toISOString(),
             };
 
@@ -273,6 +256,23 @@ router.put('/markets/:id', async function (req, res) {
           }
         } else {
           // post
+          const { errors, valid } = validateMarketInput(
+            symbol,
+            name,
+            country,
+            industry,
+            ipoYear,
+            marketCap,
+            sector,
+            volume,
+            netChage,
+            netChangePercent,
+            lastPrice
+          );
+          if (!valid) {
+            return res.status(400).send(errors);
+          }
+
           let newMarket = new Market({
             symbol,
             name,
