@@ -18,8 +18,16 @@ const marketSchema = new Schema({
   netChange: { type: Number, required: true },
   netChangePercent: { type: Number, required: true },
   lastPrice: { type: Number, required: true },
-  createdAt: { type: String, required: true },
-  updatedAt: { type: String, required: true },
+  createdAt: {
+    type: String,
+    required: true,
+    default: new Date().toISOString(),
+  },
+  updatedAt: {
+    type: String,
+    required: true,
+    default: new Date().toISOString(),
+  },
 });
 
 module.exports = model('Market', marketSchema);

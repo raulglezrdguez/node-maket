@@ -69,8 +69,6 @@ router.post('/markets', async function (req, res) {
           netChage,
           netChangePercent,
           lastPrice,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         });
 
         newMarket = await newMarket.save();
@@ -96,6 +94,76 @@ router.post('/markets', async function (req, res) {
       }
     } else {
       return res.status(400).send({ general: 'Invalid input data' });
+    }
+  } else {
+    return res.status(400).send({ general: 'Input data is empty' });
+  }
+});
+
+// new bulk of markets
+router.post('/markets/bulk', async function (req, res) {
+  if (req && req.body) {
+    const { bulk } = req.body;
+
+    if (bulk && Array.isArray(bulk) && bulk.length > 0) {
+      for (let b of bulk) {
+        const {
+          symbol,
+          name,
+          country,
+          industry,
+          ipoYear,
+          marketCap,
+          sector,
+          volume,
+          netChage,
+          netChangePercent,
+          lastPrice,
+        } = b;
+        const { errors, valid } = validateMarketInput(
+          symbol,
+          name,
+          country,
+          industry,
+          ipoYear,
+          marketCap,
+          sector,
+          volume,
+          netChage,
+          netChangePercent,
+          lastPrice
+        );
+        if (!valid) {
+          return res.status(400).send(errors);
+        }
+      }
+
+      try {
+        const newMarkets = await Market.insertMany(bulk);
+
+        const newMarketsToSend = newMarkets.map((newMarket) => ({
+          id: newMarket._id,
+          symbol: newMarket.symbol,
+          name: newMarket.name,
+          country: newMarket.country,
+          industry: newMarket.industry,
+          ipoYear: newMarket.ipoYear,
+          marketCap: newMarket.marketCap,
+          sector: newMarket.sector,
+          volume: newMarket.volume,
+          netChage: newMarket.netChage,
+          netChangePercent: newMarket.netChangePercent,
+          lastPrice: newMarket.lastPrice,
+          createdAt: newMarket.createdAt,
+          updatedAt: newMarket.updatedAt,
+        }));
+
+        return res.send(newMarketsToSend);
+      } catch (err) {
+        return res.status(500).send({ general: 'Internal server error' });
+      }
+    } else {
+      return res.status(400).send({ general: 'Bulk data is empty' });
     }
   } else {
     return res.status(400).send({ general: 'Input data is empty' });
@@ -268,8 +336,6 @@ router.put('/markets/:id', async function (req, res) {
             netChage,
             netChangePercent,
             lastPrice,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
           });
 
           newMarket = await newMarket.save();
@@ -330,6 +396,7 @@ router.delete('/markets/:id', async function (req, res) {
   }
 });
 
+// get market
 router.get('/markets/:id', async function (req, res) {
   if (req && req.params) {
     const { id } = req.params;
@@ -350,6 +417,7 @@ router.get('/markets/:id', async function (req, res) {
   }
 });
 
+// get markets
 router.get('/markets', async function (req, res) {
   try {
     const markets = await Market.find().select('-_id');
