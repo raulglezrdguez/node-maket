@@ -1,13 +1,9 @@
-const dotenv = require('dotenv');
-
 const express = require('express');
 const router = express.Router();
 
 const Market = require('../models/market');
 
 const { validateMarketInput } = require('../util/validators');
-
-dotenv.config({ path: '../.env' });
 
 // new single market
 router.post('/markets', async function (req, res) {
@@ -419,12 +415,41 @@ router.get('/markets/:id', async function (req, res) {
 
 // get markets
 router.get('/markets', async function (req, res) {
-  try {
-    const markets = await Market.find().select('-_id');
+  if (req && req.query) {
+    /**
+     * page: page number -> 0, 1, 2, 3 ...
+     * limit: markets for page _> 1, 2, 3 ...
+     */
+    const { page, limit } = req.query;
 
-    return res.status(200).send(markets);
-  } catch (err) {
-    return res.status(500).send({ general: 'Internal server error' });
+    try {
+      if (page && limit && limit > 0) {
+        const total = await Market.countDocuments({});
+        const markets = await Market.find({})
+          .sort('-createdAt')
+          .skip(page * limit)
+          .limit(limit)
+          .select('-_id');
+
+        return res.status(200).send({
+          data: markets,
+          count: markets.length,
+          total,
+          page,
+          pageCount: Math.ceil(total / limit),
+        });
+      } else {
+        return res.status(400).send({
+          general: 'Query params: page and limit are needed with valid values',
+        });
+      }
+    } catch (err) {
+      return res.status(500).send({ general: 'Internal server error' });
+    }
+  } else {
+    return res
+      .status(400)
+      .send({ general: 'Query params: page and limit are needed' });
   }
 });
 
