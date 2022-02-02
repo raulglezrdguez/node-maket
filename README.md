@@ -29,7 +29,7 @@ With yarn
 yarn start
 ```
 
-## Postman test
+## Postman tests
 
 ### POST: http://localhost:4000/markets
 

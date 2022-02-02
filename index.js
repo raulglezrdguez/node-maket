@@ -16,6 +16,7 @@ app.use(cors());
 
 const httpServer = http.createServer(app);
 
+// should be /api
 app.use('/', marketsRoutes);
 
 mongoose

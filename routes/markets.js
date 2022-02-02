@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const marketAjvSchema = require('../schema/market');
-const paginationAjvSchema = require('../schema/pagination');
 
 const Market = require('../models/market');
 
