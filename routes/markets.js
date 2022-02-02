@@ -359,34 +359,89 @@ router.get('/markets', async function (req, res) {
     /**
      * page: page number -> 0, 1, 2, 3 ...
      * limit: markets for page -> 1, 2, 3 ...
+     * sort_by: a valid field
+     * sort_order: 'asc' or 'desc'
      */
-    const { page, limit } = req.query;
-    const p = parseInt(page);
-    const l = parseInt(limit);
+    const { page, limit, sort_by, sort_order } = req.query;
+    let _page = 0;
+    let _limit = 10;
+    let _sortBy = 'id';
+    let _sortOrder = '+';
 
-    if (!isNaN(p) && !isNaN(l) && p > -1 && l > 0) {
-      try {
-        const total = await Market.countDocuments({});
-        const markets = await Market.find({})
-          .sort({ createdAt: -1 })
-          .skip(p * l)
-          .limit(l)
-          .select('-_id');
-
-        return res.status(200).send({
-          data: markets,
-          count: markets.length,
-          total,
-          page: p,
-          pageCount: Math.ceil(total / l),
+    if (page) {
+      if (!isNaN(parseInt(page)) && parseInt(page) >= 0) {
+        _page = parseInt(page);
+      } else {
+        return res.status(400).send({
+          error: 'page should be a valid field: 0, 1, 2 ...',
         });
-      } catch (err) {
-        return res.status(500).send({ error: 'Internal server error' });
       }
-    } else {
-      return res.status(400).send({
-        error: 'Query params: page and limit are needed and valid',
+    }
+
+    if (limit) {
+      if (!isNaN(parseInt(limit)) && parseInt(limit) > 0) {
+        _limit = parseInt(limit);
+      } else {
+        return res.status(400).send({
+          error: 'limit should be a valid field: 1, 2 ...',
+        });
+      }
+    }
+
+    if (sort_by) {
+      if (
+        [
+          'id',
+          'symbol',
+          'name',
+          'country',
+          'industry',
+          'ipoYear',
+          'marketCap',
+          'sector',
+          'volume',
+          'netChange',
+          'netChangePercent',
+          'lastPrice',
+          'createdAt',
+          'updatedAt',
+        ].includes(sort_by)
+      ) {
+        _sortBy = sort_by;
+      } else {
+        return res.status(400).send({
+          error: 'sort_by should be a valid field',
+        });
+      }
+    }
+
+    if (sort_order) {
+      if (['asc', 'desc'].includes(sort_order)) {
+        _sortOrder = sort_order === 'asc' ? '+' : '-';
+      } else {
+        return res.status(400).send({
+          error: "sort_order should be 'asc' or 'desc'",
+        });
+      }
+    }
+
+    try {
+      const total = await Market.countDocuments({});
+      const markets = await Market.find({})
+        .sort(`${_sortOrder}${_sortBy}`)
+        .skip(_page * _limit)
+        .limit(_limit)
+        .select('-_id');
+
+      return res.status(200).send({
+        data: markets,
+        count: markets.length,
+        total,
+        page: _page,
+        pageCount: Math.ceil(total / _limit),
       });
+    } catch (err) {
+      return res.status(500).send({ error: 'Internal server error' });
     }
   } else {
     return res

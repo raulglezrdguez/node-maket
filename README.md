@@ -114,9 +114,18 @@ yarn start
 
 #### if {id} exists return the market else error
 
-### GET: http://localhost:4000/markets/?page={page}&limit={limit}
+### GET: http://localhost:4000/markets/?page={page}&limit={limit}...
 
-#### Query parameters
+#### Optional query parameters
 
 - page: minimum value 0
 - limit: minimum value 1
+- sort_by: a valid field, for example: id
+- sort_order: asc or desc
+
+#### Default query parameters
+
+- page: 0
+- limit: 10
+- sort_by: id
+- sort_order: asc
