@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      code {
+        font-family: monospace;
+        color: #050505;
+        background-color: #f1f1f1;
+        padding: 2px;
+        font-size: 105%;
+      }
+    </style>
+    <title>Markets api test</title>
+  </head>
+  <body>
+    <h1>Market web service api</h1>
+
+    <h2>Install</h2>
+
+    <ul>
+      <li>Clone or download repo.</li>
+      <li>Inside folder. With npm</li>
+    </ul>
+
+    <code>npm i</code>
+
+    <p>With yarn</p>
+
+    <code>yarn</code>
+
+    <h2>Run</h2>
+
+    <p>With npm</p>
+
+    <code>npm start</code>
+
+    <p>With yarn</p>
+
+    <code>yarn start</code>
+
+    <h2>Postman tests</h2>
+
+    <h3>POST: http://localhost:4000/markets</h3>
+
+    <ul>
+      <li>Body - raw - JSON</li>
+    </ul>
+
+    <code>
+      { "id": 1, "symbol": "a added", "name": "a added", "country": "a ",
+      "industry": "a", "ipoYear": 20, "marketCap": 10, "sector": "12h a",
+      "volume": 10, "netChange": 0, "netChangePercent": 5, "lastPrice": 30 }
+    </code>
+
+    <h3>POST: http://localhost:4000/markets/bulk</h3>
+
+    <ul>
+      <li>Body - raw - JSON</li>
+    </ul>
+
+    <code>
+      { "bulk": [ { "id": "1", "symbol": "efg", "name": "efg", "country": "efg",
+      "industry": "efg", "ipoYear": 10, "marketCap": 0, "sector": "12g",
+      "volume": 0, "netChange": 20, "netChangePercent": 0, "lastPrice": 30 } ] }
+    </code>
+
+    <h3>PATCH: http://localhost:4000/markets/{id}</h3>
+
+    <ul>
+      <li>Body - raw - none: returns the same market</li>
+    </ul>
+    <ul>
+      <li>Body - raw - JSON: you can change the market fields you need</li>
+    </ul>
+
+    <code>
+      { "symbol": "a changed", "name": "a changed", "country": "a changed" }
+    </code>
+
+    <ul>
+      <li>Returns the same market; "a" is not a market field</li>
+    </ul>
+
+    <code> {"a": 10} </code>
+
+    <ul>
+      <li>Returns the same market</li>
+    </ul>
+
+    <code> {} </code>
+
+    <h3>PUT: http://localhost:4000/markets/{id}</h3>
+
+    <h4>if {id} exists patch market else post market</h4>
+
+    <h3>DELETE: http://localhost:4000/markets/{id}</h3>
+
+    <h4>if {id} exists delete market else error</h4>
+
+    <h3>GET: http://localhost:4000/markets/{id}</h3>
+
+    <h4>if {id} exists return the market else error</h4>
+
+    <h3>GET: http://localhost:4000/markets/?page={page}&limit={limit}...</h3>
+
+    <h4>Optional query parameters</h4>
+
+    <ul>
+      <li>page: minimum value 0</li>
+      <li>limit: minimum value 1</li>
+      <li>sort_by: a valid field, for example: id</li>
+      <li>sort_order: asc or desc</li>
+    </ul>
+
+    <h4>Default query parameters</h4>
+
+    <ul>
+      <li>page: 0</li>
+      <li>limit: 10</li>
+      <li>sort_by: id</li>
+      <li>sort_order: asc</li>
+    </ul>
+  </body>
+</html>

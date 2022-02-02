@@ -1,4 +1,4 @@
-# Market web service with endpoints
+# Market web service api
 
 ## Install
 
