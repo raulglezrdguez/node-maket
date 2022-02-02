@@ -7,7 +7,7 @@ module.exports.validateMarketInput = (
   marketCap,
   sector,
   volume,
-  netChage,
+  netChange,
   netChangePercent,
   lastPrice
 ) => {
@@ -37,8 +37,8 @@ module.exports.validateMarketInput = (
   if (!volume) {
     errors.volume = 'volume is empty';
   }
-  if (!netChage) {
-    errors.netChage = 'NetChage is empty';
+  if (!netChange) {
+    errors.netChange = 'NetChange is empty';
   }
   if (!netChangePercent) {
     errors.netChangePercent = 'NetChagePercent is empty';
