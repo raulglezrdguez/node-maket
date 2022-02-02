@@ -104,6 +104,17 @@ yarn start
 
 #### if {id} exists patch market else post market
 
+### DELETE: http://localhost:4000/markets/{id}
+
+#### if {id} exists delete market else error
+
 ### GET: http://localhost:4000/markets/{id}
 
 #### if {id} exists return the market else error
+
+### GET: http://localhost:4000/markets/?page={page}&limit={limit}
+
+#### Query parameters
+
+- page: minimum value 0
+- limit: minimum value 1

@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const marketAjvSchema = require('../schema/market');
-const Market = require('../models/market');
+const paginationAjvSchema = require('../schema/pagination');
 
-const { validateMarketInput } = require('../util/validators');
+const Market = require('../models/market');
 
 const ObjectId = require('mongoose').Types.ObjectId;
 
@@ -331,33 +331,35 @@ router.get('/markets', async function (req, res) {
   if (req && req.query) {
     /**
      * page: page number -> 0, 1, 2, 3 ...
-     * limit: markets for page _> 1, 2, 3 ...
+     * limit: markets for page -> 1, 2, 3 ...
      */
     const { page, limit } = req.query;
+    const p = parseInt(page);
+    const l = parseInt(limit);
 
-    try {
-      if (page && limit && limit > 0) {
+    if (!isNaN(p) && !isNaN(l) && p > -1 && l > 0) {
+      try {
         const total = await Market.countDocuments({});
         const markets = await Market.find({})
-          .sort('-createdAt')
-          .skip(page * limit)
-          .limit(limit)
+          .sort({ createdAt: -1 })
+          .skip(p * l)
+          .limit(l)
           .select('-_id');
 
         return res.status(200).send({
           data: markets,
           count: markets.length,
           total,
-          page,
-          pageCount: Math.ceil(total / limit),
+          page: p,
+          pageCount: Math.ceil(total / l),
         });
-      } else {
-        return res.status(400).send({
-          error: 'Query params: page and limit are needed with valid values',
-        });
+      } catch (err) {
+        return res.status(500).send({ error: 'Internal server error' });
       }
-    } catch (err) {
-      return res.status(500).send({ error: 'Internal server error' });
+    } else {
+      return res.status(400).send({
+        error: 'Query params: page and limit are needed and valid',
+      });
     }
   } else {
     return res
