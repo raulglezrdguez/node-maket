@@ -6,6 +6,8 @@ const Market = require('../models/market');
 
 const { validateMarketInput } = require('../util/validators');
 
+const ObjectId = require('mongoose').Types.ObjectId;
+
 // new single market
 router.post('/markets', async function (req, res) {
   if (req && req.body) {
@@ -95,9 +97,10 @@ router.post('/markets/bulk', async function (req, res) {
 // update market
 router.patch('/markets/:id', async function (req, res) {
   if (req && req.params.id) {
+    console.log(req.params);
     const { id } = req.params;
 
-    if (id) {
+    if (id && ObjectId.isValid(id)) {
       let market = await Market.findOne({ id });
       if (market) {
         if (req.body) {
@@ -131,7 +134,9 @@ router.patch('/markets/:id', async function (req, res) {
               updatedAt: new Date().toISOString(),
             };
 
-            market = await Market.findOneAndUpdate({ id }, update);
+            market = await Market.findOneAndUpdate({ id }, update, {
+              new: true,
+            });
 
             return res.send({
               id,
@@ -150,19 +155,19 @@ router.patch('/markets/:id', async function (req, res) {
               updatedAt: market.updatedAt,
             });
           } catch (err) {
-            return res.status(500).send({ general: 'Internal server error' });
+            return res.status(500).send({ error: 'Internal server error' });
           }
         } else {
-          return res.status(400).send({ id: 'Data to update is needed' });
+          return res.status(400).send({ error: 'Data to update is needed' });
         }
       } else {
-        return res.status(404).send({ id: 'Market not found' });
+        return res.status(404).send({ error: 'Market not found' });
       }
     } else {
-      return res.status(400).send({ general: 'Param id is empty' });
+      return res.status(400).send({ error: 'Param id is invalid' });
     }
   } else {
-    return res.status(400).send({ general: 'Param id is necesary' });
+    return res.status(400).send({ error: 'Param id is necesary' });
   }
 });
 

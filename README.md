@@ -74,3 +74,28 @@ yarn start
     ]
 }
 ```
+
+### PATCH: http://localhost:4000/markets/{id}
+
+- Body - raw - none: returns the same market
+- Body - raw - JSON: you can change the market fields you need
+
+```
+{
+    "symbol": "a changed",
+    "name": "a changed",
+    "country": "a changed"
+}
+```
+
+- Returns the same market; "a" is not a market field
+
+```
+{"a": 10}
+```
+
+- Returns the same market
+
+```
+{}
+```
