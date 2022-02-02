@@ -50,3 +50,27 @@ yarn start
   "lastPrice": 0
 }
 ```
+
+### POST: http://localhost:4000/markets/bulk
+
+- Body - raw - JSON
+
+```
+{
+    "bulk": [
+        {
+            "symbol": "efg",
+            "name": "efg",
+            "country": "efg",
+            "industry": "efg",
+            "ipoYear": 10,
+            "marketCap": 0,
+            "sector": "12g",
+            "volume": 0,
+            "netChange": 20,
+            "netChangePercent": 0,
+            "lastPrice": 30
+        }
+    ]
+}
+```
