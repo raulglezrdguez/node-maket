@@ -33,13 +33,11 @@ yarn start
 
 ### POST: http://localhost:4000/markets
 
-- Body
-  -- raw
-  --- JSON
+- Body - raw - JSON
 
 ```
 {
-    "symbol": "a",
+  "symbol": "a",
   "name": "a",
   "country": "a",
   "industry": "a",

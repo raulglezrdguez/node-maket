@@ -37,10 +37,10 @@ router.post('/markets', async function (req, res) {
         updatedAt: newMarket.updatedAt,
       });
     } catch (err) {
-      return res.status(500).send({ general: 'Internal server error' });
+      return res.status(500).send({ error: 'Internal server error' });
     }
   } else {
-    return res.status(400).send({ general: 'Input data is empty' });
+    return res.status(400).send({ error: 'Input data is empty' });
   }
 });
 
@@ -51,33 +51,9 @@ router.post('/markets/bulk', async function (req, res) {
 
     if (bulk && Array.isArray(bulk) && bulk.length > 0) {
       for (let b of bulk) {
-        const {
-          symbol,
-          name,
-          country,
-          industry,
-          ipoYear,
-          marketCap,
-          sector,
-          volume,
-          netChage,
-          netChangePercent,
-          lastPrice,
-        } = b;
-        const { errors, valid } = validateMarketInput(
-          symbol,
-          name,
-          country,
-          industry,
-          ipoYear,
-          marketCap,
-          sector,
-          volume,
-          netChage,
-          netChangePercent,
-          lastPrice
-        );
+        const valid = marketAjvSchema(b);
         if (!valid) {
+          const errors = marketAjvSchema.errors;
           return res.status(400).send(errors);
         }
       }
@@ -104,13 +80,15 @@ router.post('/markets/bulk', async function (req, res) {
 
         return res.send(newMarketsToSend);
       } catch (err) {
-        return res.status(500).send({ general: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error' });
       }
     } else {
-      return res.status(400).send({ general: 'Bulk data is empty' });
+      return res
+        .status(400)
+        .send({ error: 'Bulk data should be an array not empty' });
     }
   } else {
-    return res.status(400).send({ general: 'Input data is empty' });
+    return res.status(400).send({ error: 'Input data is empty' });
   }
 });
 
