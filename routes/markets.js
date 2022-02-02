@@ -22,7 +22,7 @@ router.post('/markets', async function (req, res) {
 
       newMarket = await newMarket.save();
 
-      return res.send({
+      return res.status(200).send({
         id: newMarket._id,
         symbol: newMarket.symbol,
         name: newMarket.name,
@@ -32,7 +32,7 @@ router.post('/markets', async function (req, res) {
         marketCap: newMarket.marketCap,
         sector: newMarket.sector,
         volume: newMarket.volume,
-        netChage: newMarket.netChage,
+        netChange: newMarket.netChange,
         netChangePercent: newMarket.netChangePercent,
         lastPrice: newMarket.lastPrice,
         createdAt: newMarket.createdAt,
@@ -73,14 +73,14 @@ router.post('/markets/bulk', async function (req, res) {
           marketCap: newMarket.marketCap,
           sector: newMarket.sector,
           volume: newMarket.volume,
-          netChage: newMarket.netChage,
+          netChange: newMarket.netChange,
           netChangePercent: newMarket.netChangePercent,
           lastPrice: newMarket.lastPrice,
           createdAt: newMarket.createdAt,
           updatedAt: newMarket.updatedAt,
         }));
 
-        return res.send(newMarketsToSend);
+        return res.status(200).send(newMarketsToSend);
       } catch (err) {
         return res.status(500).send({ error: 'Internal server error' });
       }
@@ -113,7 +113,7 @@ router.patch('/markets/:id', async function (req, res) {
             marketCap,
             sector,
             volume,
-            netChage,
+            netChange,
             netChangePercent,
             lastPrice,
           } = req.body;
@@ -128,7 +128,7 @@ router.patch('/markets/:id', async function (req, res) {
               marketCap: marketCap || market.marketCap,
               sector: sector || market.sector,
               volume: volume || market.volume,
-              netChage: netChage || market.netChage,
+              netChange: netChange || market.netChange,
               netChangePercent: netChangePercent || market.netChangePercent,
               lastPrice: lastPrice || market.lastPrice,
               updatedAt: new Date().toISOString(),
@@ -138,7 +138,7 @@ router.patch('/markets/:id', async function (req, res) {
               new: true,
             });
 
-            return res.send({
+            return res.status(200).send({
               id,
               symbol: market.symbol,
               name: market.name,
@@ -148,7 +148,7 @@ router.patch('/markets/:id', async function (req, res) {
               marketCap: market.marketCap,
               sector: market.sector,
               volume: market.volume,
-              netChage: market.netChage,
+              netChange: market.netChange,
               netChangePercent: market.netChangePercent,
               lastPrice: market.lastPrice,
               createdAt: market.createdAt,
@@ -176,25 +176,24 @@ router.put('/markets/:id', async function (req, res) {
   if (req && req.params.id) {
     const { id } = req.params;
 
-    if (id) {
+    if (id && ObjectId.isValid(id)) {
       if (req.body) {
-        const {
-          symbol,
-          name,
-          country,
-          industry,
-          ipoYear,
-          marketCap,
-          sector,
-          volume,
-          netChage,
-          netChangePercent,
-          lastPrice,
-        } = req.body;
-
         let market = await Market.findOne({ id });
         if (market) {
           // update
+          const {
+            symbol,
+            name,
+            country,
+            industry,
+            ipoYear,
+            marketCap,
+            sector,
+            volume,
+            netChange,
+            netChangePercent,
+            lastPrice,
+          } = req.body;
           try {
             const update = {
               symbol: symbol || market.symbol,
@@ -205,15 +204,17 @@ router.put('/markets/:id', async function (req, res) {
               marketCap: marketCap || market.marketCap,
               sector: sector || market.sector,
               volume: volume || market.volume,
-              netChage: netChage || market.netChage,
+              netChange: netChange || market.netChange,
               netChangePercent: netChangePercent || market.netChangePercent,
               lastPrice: lastPrice || market.lastPrice,
               updatedAt: new Date().toISOString(),
             };
 
-            market = await Market.findOneAndUpdate({ id }, update);
+            market = await Market.findOneAndUpdate({ id }, update, {
+              new: true,
+            });
 
-            return res.send({
+            return res.status(200).send({
               id,
               symbol: market.symbol,
               name: market.name,
@@ -223,51 +224,28 @@ router.put('/markets/:id', async function (req, res) {
               marketCap: market.marketCap,
               sector: market.sector,
               volume: market.volume,
-              netChage: market.netChage,
+              netChange: market.netChange,
               netChangePercent: market.netChangePercent,
               lastPrice: market.lastPrice,
               createdAt: market.createdAt,
               updatedAt: market.updatedAt,
             });
           } catch (err) {
-            return res.status(500).send({ general: 'Internal server error' });
+            return res.status(500).send({ error: 'Internal server error' });
           }
         } else {
           // post
-          const { errors, valid } = validateMarketInput(
-            symbol,
-            name,
-            country,
-            industry,
-            ipoYear,
-            marketCap,
-            sector,
-            volume,
-            netChage,
-            netChangePercent,
-            lastPrice
-          );
+          const valid = marketAjvSchema(req.body);
           if (!valid) {
+            const errors = marketAjvSchema.errors;
             return res.status(400).send(errors);
           }
 
-          let newMarket = new Market({
-            symbol,
-            name,
-            country,
-            industry,
-            ipoYear,
-            marketCap,
-            sector,
-            volume,
-            netChage,
-            netChangePercent,
-            lastPrice,
-          });
+          let newMarket = new Market({ ...req.body });
 
           newMarket = await newMarket.save();
 
-          return res.send({
+          return res.status(200).send({
             id: newMarket._id,
             symbol: newMarket.symbol,
             name: newMarket.name,
@@ -277,7 +255,7 @@ router.put('/markets/:id', async function (req, res) {
             marketCap: newMarket.marketCap,
             sector: newMarket.sector,
             volume: newMarket.volume,
-            netChage: newMarket.netChage,
+            netChange: newMarket.netChange,
             netChangePercent: newMarket.netChangePercent,
             lastPrice: newMarket.lastPrice,
             createdAt: newMarket.createdAt,
@@ -285,13 +263,13 @@ router.put('/markets/:id', async function (req, res) {
           });
         }
       } else {
-        return res.status(400).send({ id: 'Data to update is needed' });
+        return res.status(400).send({ error: 'Data to update is needed' });
       }
     } else {
-      return res.status(400).send({ general: 'Param id is empty' });
+      return res.status(400).send({ error: 'Param id is invalid' });
     }
   } else {
-    return res.status(400).send({ general: 'Param id is necesary' });
+    return res.status(400).send({ error: 'Param id is necesary' });
   }
 });
 
@@ -300,26 +278,26 @@ router.delete('/markets/:id', async function (req, res) {
   if (req && req.params) {
     const { id } = req.params;
 
-    if (id) {
+    if (id && ObjectId.isValid(id)) {
       try {
         let market = await Market.findOne({ id });
         if (market) {
           await Market.deleteOne({ id });
 
-          return res.send({
+          return res.status(200).send({
             id,
           });
         } else {
-          return res.status(404).send({ id: 'Market not found' });
+          return res.status(404).send({ error: 'Market not found' });
         }
       } catch (err) {
-        return res.status(500).send({ general: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error' });
       }
     } else {
-      return res.status(400).send({ id: 'Id needed' });
+      return res.status(400).send({ error: 'Invalid id' });
     }
   } else {
-    return res.status(400).send({ id: 'Param Id needed' });
+    return res.status(400).send({ error: 'Param Id needed' });
   }
 });
 
@@ -328,19 +306,23 @@ router.get('/markets/:id', async function (req, res) {
   if (req && req.params) {
     const { id } = req.params;
 
-    if (id) {
+    if (id && ObjectId.isValid(id)) {
       try {
         const market = await Market.findOne({ id }).select('-_id');
 
-        return res.status(200).send(market);
+        if (market) {
+          return res.status(200).send(market);
+        } else {
+          return res.status(404).send({ error: 'Market not found' });
+        }
       } catch (err) {
-        return res.status(500).send({ general: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error' });
       }
     } else {
-      return res.status(400).send({ id: 'Param Id is empty' });
+      return res.status(400).send({ error: 'Invalid param id' });
     }
   } else {
-    return res.status(400).send({ id: 'Param Id needed' });
+    return res.status(400).send({ error: 'Param id needed' });
   }
 });
 
@@ -371,16 +353,16 @@ router.get('/markets', async function (req, res) {
         });
       } else {
         return res.status(400).send({
-          general: 'Query params: page and limit are needed with valid values',
+          error: 'Query params: page and limit are needed with valid values',
         });
       }
     } catch (err) {
-      return res.status(500).send({ general: 'Internal server error' });
+      return res.status(500).send({ error: 'Internal server error' });
     }
   } else {
     return res
       .status(400)
-      .send({ general: 'Query params: page and limit are needed' });
+      .send({ error: 'Query params: page and limit are needed' });
   }
 });
 

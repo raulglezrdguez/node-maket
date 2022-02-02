@@ -28,6 +28,7 @@ const schema = {
     'netChangePercent',
     'lastPrice',
   ],
+  additionalProperties: false,
 };
 
 module.exports = ajvInstance.compile(schema);

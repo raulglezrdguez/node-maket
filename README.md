@@ -99,3 +99,11 @@ yarn start
 ```
 {}
 ```
+
+### PUT: http://localhost:4000/markets/{id}
+
+#### if {id} exists patch market else post market
+
+### GET: http://localhost:4000/markets/{id}
+
+#### if {id} exists return the market else error
