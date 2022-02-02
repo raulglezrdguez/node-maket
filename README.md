@@ -122,6 +122,7 @@ yarn start
 - limit: minimum value 1
 - sort_by: a valid field, for example: id
 - sort_order: asc or desc
+- pdf: true or false
 
 #### Default query parameters
 
@@ -129,3 +130,4 @@ yarn start
 - limit: 10
 - sort_by: id
 - sort_order: asc
+- pdf: false

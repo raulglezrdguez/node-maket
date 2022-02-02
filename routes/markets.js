@@ -5,7 +5,8 @@ const marketAjvSchema = require('../schema/market');
 
 const Market = require('../models/market');
 
-const ObjectId = require('mongoose').Types.ObjectId;
+// const ObjectId = require('mongoose').Types.ObjectId;
+const createPdf = require('../utils/createPdf');
 
 // new single market
 router.post('/markets', async function (req, res) {
@@ -362,11 +363,12 @@ router.get('/markets', async function (req, res) {
      * sort_by: a valid field
      * sort_order: 'asc' or 'desc'
      */
-    const { page, limit, sort_by, sort_order } = req.query;
+    const { page, limit, sort_by, sort_order, pdf } = req.query;
     let _page = 0;
     let _limit = 10;
     let _sortBy = 'id';
     let _sortOrder = '+';
+    let _pdf = false;
 
     if (page) {
       if (!isNaN(parseInt(page)) && parseInt(page) >= 0) {
@@ -425,21 +427,51 @@ router.get('/markets', async function (req, res) {
       }
     }
 
+    if (pdf) {
+      if (['true', 'false'].includes(pdf)) {
+        _pdf = pdf === 'true' ? true : false;
+      } else {
+        return res.status(400).send({
+          error: "pdf should be 'true' or 'false'",
+        });
+      }
+    }
+
     try {
       const total = await Market.countDocuments({});
       const markets = await Market.find({})
         .sort(`${_sortOrder}${_sortBy}`)
         .skip(_page * _limit)
         .limit(_limit)
-        .select('-_id');
+        .select(
+          '-_id id symbol name country industry ipoYear marketCap sector volume netChange netChangePercent lastPrice createdAt updatedAt'
+        );
 
-      return res.status(200).send({
-        data: markets,
-        count: markets.length,
-        total,
-        page: _page,
-        pageCount: Math.ceil(total / _limit),
-      });
+      if (_pdf) {
+        const pdfDoc = await createPdf(markets);
+        if (pdfDoc) {
+          res.writeHead(200, {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="markets.pdf"',
+          });
+
+          const download = Buffer.from(pdfDoc.toString('utf-8'), 'base64');
+
+          return res.end(download);
+        } else {
+          return res.status(500).send({
+            error: 'error creating pdf in memory',
+          });
+        }
+      } else {
+        return res.status(200).send({
+          data: markets,
+          count: markets.length,
+          total,
+          page: _page,
+          pageCount: Math.ceil(total / _limit),
+        });
+      }
     } catch (err) {
       return res.status(500).send({ error: 'Internal server error' });
     }
