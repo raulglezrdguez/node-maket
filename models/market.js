@@ -1,12 +1,13 @@
 const { model, Schema } = require('mongoose');
 
 const marketSchema = new Schema({
-  id: {
-    type: Schema.Types.ObjectId,
-    default: function () {
-      return this._id;
-    },
-  },
+  // id: {
+  //   type: Schema.Types.ObjectId,
+  //   default: function () {
+  //     return this._id;
+  //   },
+  // },
+  id: { type: Number, required: true, unique: true },
   symbol: { type: String, required: true },
   name: { type: String, required: true },
   country: { type: String, required: true },

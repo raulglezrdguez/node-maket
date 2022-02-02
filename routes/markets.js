@@ -17,26 +17,34 @@ router.post('/markets', async function (req, res) {
     }
 
     try {
-      let newMarket = new Market({ ...req.body });
+      const id = req.body.id;
+      const market = await Market.findOne({ id });
+      if (market) {
+        return res
+          .status(400)
+          .send({ error: `Market with id: ${id}, already exists` });
+      } else {
+        let newMarket = new Market({ ...req.body });
 
-      newMarket = await newMarket.save();
+        newMarket = await newMarket.save();
 
-      return res.status(200).send({
-        id: newMarket._id,
-        symbol: newMarket.symbol,
-        name: newMarket.name,
-        country: newMarket.country,
-        industry: newMarket.industry,
-        ipoYear: newMarket.ipoYear,
-        marketCap: newMarket.marketCap,
-        sector: newMarket.sector,
-        volume: newMarket.volume,
-        netChange: newMarket.netChange,
-        netChangePercent: newMarket.netChangePercent,
-        lastPrice: newMarket.lastPrice,
-        createdAt: newMarket.createdAt,
-        updatedAt: newMarket.updatedAt,
-      });
+        return res.status(200).send({
+          id: newMarket._id,
+          symbol: newMarket.symbol,
+          name: newMarket.name,
+          country: newMarket.country,
+          industry: newMarket.industry,
+          ipoYear: newMarket.ipoYear,
+          marketCap: newMarket.marketCap,
+          sector: newMarket.sector,
+          volume: newMarket.volume,
+          netChange: newMarket.netChange,
+          netChangePercent: newMarket.netChangePercent,
+          lastPrice: newMarket.lastPrice,
+          createdAt: newMarket.createdAt,
+          updatedAt: newMarket.updatedAt,
+        });
+      }
     } catch (err) {
       return res.status(500).send({ error: 'Internal server error' });
     }
@@ -60,26 +68,34 @@ router.post('/markets/bulk', async function (req, res) {
       }
 
       try {
-        const newMarkets = await Market.insertMany(bulk);
+        const ids = bulk.map((b) => b.id);
+        const markets = await Market.find({ id: { $in: ids } });
+        if (markets && markets.length > 0) {
+          return res
+            .status(400)
+            .send({ error: 'Market with some id already exists' });
+        } else {
+          const newMarkets = await Market.insertMany(bulk);
 
-        const newMarketsToSend = newMarkets.map((newMarket) => ({
-          id: newMarket._id,
-          symbol: newMarket.symbol,
-          name: newMarket.name,
-          country: newMarket.country,
-          industry: newMarket.industry,
-          ipoYear: newMarket.ipoYear,
-          marketCap: newMarket.marketCap,
-          sector: newMarket.sector,
-          volume: newMarket.volume,
-          netChange: newMarket.netChange,
-          netChangePercent: newMarket.netChangePercent,
-          lastPrice: newMarket.lastPrice,
-          createdAt: newMarket.createdAt,
-          updatedAt: newMarket.updatedAt,
-        }));
+          const newMarketsToSend = newMarkets.map((newMarket) => ({
+            id: newMarket.id,
+            symbol: newMarket.symbol,
+            name: newMarket.name,
+            country: newMarket.country,
+            industry: newMarket.industry,
+            ipoYear: newMarket.ipoYear,
+            marketCap: newMarket.marketCap,
+            sector: newMarket.sector,
+            volume: newMarket.volume,
+            netChange: newMarket.netChange,
+            netChangePercent: newMarket.netChangePercent,
+            lastPrice: newMarket.lastPrice,
+            createdAt: newMarket.createdAt,
+            updatedAt: newMarket.updatedAt,
+          }));
 
-        return res.status(200).send(newMarketsToSend);
+          return res.status(200).send(newMarketsToSend);
+        }
       } catch (err) {
         return res.status(500).send({ error: 'Internal server error' });
       }
@@ -96,11 +112,12 @@ router.post('/markets/bulk', async function (req, res) {
 // update market
 router.patch('/markets/:id', async function (req, res) {
   if (req && req.params.id) {
-    console.log(req.params);
     const { id } = req.params;
 
-    if (id && ObjectId.isValid(id)) {
-      let market = await Market.findOne({ id });
+    const marketId = parseInt(id);
+
+    if (!isNaN(marketId)) {
+      let market = await Market.findOne({ id: marketId });
       if (market) {
         if (req.body) {
           const {
@@ -138,7 +155,7 @@ router.patch('/markets/:id', async function (req, res) {
             });
 
             return res.status(200).send({
-              id,
+              id: marketId,
               symbol: market.symbol,
               name: market.name,
               country: market.country,
@@ -174,10 +191,11 @@ router.patch('/markets/:id', async function (req, res) {
 router.put('/markets/:id', async function (req, res) {
   if (req && req.params.id) {
     const { id } = req.params;
+    const marketId = parseInt(id);
 
-    if (id && ObjectId.isValid(id)) {
+    if (!isNaN(marketId)) {
       if (req.body) {
-        let market = await Market.findOne({ id });
+        let market = await Market.findOne({ id: marketId });
         if (market) {
           // update
           const {
@@ -209,12 +227,12 @@ router.put('/markets/:id', async function (req, res) {
               updatedAt: new Date().toISOString(),
             };
 
-            market = await Market.findOneAndUpdate({ id }, update, {
+            market = await Market.findOneAndUpdate({ id: marketId }, update, {
               new: true,
             });
 
             return res.status(200).send({
-              id,
+              id: marketId,
               symbol: market.symbol,
               name: market.name,
               country: market.country,
@@ -240,26 +258,34 @@ router.put('/markets/:id', async function (req, res) {
             return res.status(400).send(errors);
           }
 
-          let newMarket = new Market({ ...req.body });
+          const id = req.body.id;
+          const market = await Market.findOne({ id });
+          if (market) {
+            return res
+              .status(400)
+              .send({ error: `Market with id: ${id}, already exists` });
+          } else {
+            let newMarket = new Market({ ...req.body });
 
-          newMarket = await newMarket.save();
+            newMarket = await newMarket.save();
 
-          return res.status(200).send({
-            id: newMarket._id,
-            symbol: newMarket.symbol,
-            name: newMarket.name,
-            country: newMarket.country,
-            industry: newMarket.industry,
-            ipoYear: newMarket.ipoYear,
-            marketCap: newMarket.marketCap,
-            sector: newMarket.sector,
-            volume: newMarket.volume,
-            netChange: newMarket.netChange,
-            netChangePercent: newMarket.netChangePercent,
-            lastPrice: newMarket.lastPrice,
-            createdAt: newMarket.createdAt,
-            updatedAt: newMarket.updatedAt,
-          });
+            return res.status(200).send({
+              id: newMarket.id,
+              symbol: newMarket.symbol,
+              name: newMarket.name,
+              country: newMarket.country,
+              industry: newMarket.industry,
+              ipoYear: newMarket.ipoYear,
+              marketCap: newMarket.marketCap,
+              sector: newMarket.sector,
+              volume: newMarket.volume,
+              netChange: newMarket.netChange,
+              netChangePercent: newMarket.netChangePercent,
+              lastPrice: newMarket.lastPrice,
+              createdAt: newMarket.createdAt,
+              updatedAt: newMarket.updatedAt,
+            });
+          }
         }
       } else {
         return res.status(400).send({ error: 'Data to update is needed' });
@@ -276,15 +302,16 @@ router.put('/markets/:id', async function (req, res) {
 router.delete('/markets/:id', async function (req, res) {
   if (req && req.params) {
     const { id } = req.params;
+    const marketId = parseInt(id);
 
-    if (id && ObjectId.isValid(id)) {
+    if (!isNaN(marketId)) {
       try {
-        let market = await Market.findOne({ id });
+        let market = await Market.findOne({ id: marketId });
         if (market) {
-          await Market.deleteOne({ id });
+          await Market.deleteOne({ id: marketId });
 
           return res.status(200).send({
-            id,
+            id: marketId,
           });
         } else {
           return res.status(404).send({ error: 'Market not found' });
@@ -304,10 +331,11 @@ router.delete('/markets/:id', async function (req, res) {
 router.get('/markets/:id', async function (req, res) {
   if (req && req.params) {
     const { id } = req.params;
+    const marketId = parseInt(id);
 
-    if (id && ObjectId.isValid(id)) {
+    if (!isNaN(marketId)) {
       try {
-        const market = await Market.findOne({ id }).select('-_id');
+        const market = await Market.findOne({ id: marketId }).select('-_id');
 
         if (market) {
           return res.status(200).send(market);

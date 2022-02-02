@@ -37,17 +37,18 @@ yarn start
 
 ```
 {
-  "symbol": "a",
-  "name": "a",
-  "country": "a",
-  "industry": "a",
-  "ipoYear": 0,
-  "marketCap": 0,
-  "sector": "a",
-  "volume": 0,
-  "netChange": 0,
-  "netChangePercent": 0,
-  "lastPrice": 0
+    "id": 1,
+    "symbol": "a added",
+    "name": "a added",
+    "country": "a ",
+    "industry": "a",
+    "ipoYear": 20,
+    "marketCap": 10,
+    "sector": "12h a",
+    "volume": 10,
+    "netChange": 0,
+    "netChangePercent": 5,
+    "lastPrice": 30
 }
 ```
 
@@ -59,6 +60,7 @@ yarn start
 {
     "bulk": [
         {
+            "id": "1",
             "symbol": "efg",
             "name": "efg",
             "country": "efg",

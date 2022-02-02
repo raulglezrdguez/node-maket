@@ -3,6 +3,7 @@ const ajvInstance = require('./ajv-instance');
 const schema = {
   type: 'object',
   properties: {
+    id: { type: 'integer' },
     symbol: { type: 'string', minLength: 1 },
     name: { type: 'string', minLength: 1 },
     country: { type: 'string', minLength: 1 },
@@ -16,6 +17,7 @@ const schema = {
     lastPrice: { type: 'integer' },
   },
   required: [
+    'id',
     'symbol',
     'name',
     'country',
