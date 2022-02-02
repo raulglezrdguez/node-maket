@@ -16,7 +16,7 @@ app.use(cors());
 
 const httpServer = http.createServer(app);
 
-app.use('/api', marketsRoutes);
+app.use('/', marketsRoutes);
 
 mongoose
   .connect(process.env.MONGODB, {

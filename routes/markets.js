@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+const marketAjvSchema = require('../schema/market');
 const Market = require('../models/market');
 
 const { validateMarketInput } = require('../util/validators');
@@ -8,88 +9,35 @@ const { validateMarketInput } = require('../util/validators');
 // new single market
 router.post('/markets', async function (req, res) {
   if (req && req.body) {
-    const {
-      symbol,
-      name,
-      country,
-      industry,
-      ipoYear,
-      marketCap,
-      sector,
-      volume,
-      netChage,
-      netChangePercent,
-      lastPrice,
-    } = req.body;
+    const valid = marketAjvSchema(req.body);
+    if (!valid) {
+      const errors = marketAjvSchema.errors;
+      return res.status(400).send(errors);
+    }
 
-    if (
-      (symbol,
-      name,
-      country,
-      industry,
-      ipoYear,
-      marketCap,
-      sector,
-      volume,
-      netChage,
-      netChangePercent,
-      lastPrice)
-    ) {
-      const { errors, valid } = validateMarketInput(
-        symbol,
-        name,
-        country,
-        industry,
-        ipoYear,
-        marketCap,
-        sector,
-        volume,
-        netChage,
-        netChangePercent,
-        lastPrice
-      );
-      if (!valid) {
-        return res.status(400).send(errors);
-      }
+    try {
+      let newMarket = new Market({ ...req.body });
 
-      try {
-        let newMarket = new Market({
-          symbol,
-          name,
-          country,
-          industry,
-          ipoYear,
-          marketCap,
-          sector,
-          volume,
-          netChage,
-          netChangePercent,
-          lastPrice,
-        });
+      newMarket = await newMarket.save();
 
-        newMarket = await newMarket.save();
-
-        return res.send({
-          id: newMarket._id,
-          symbol: newMarket.symbol,
-          name: newMarket.name,
-          country: newMarket.country,
-          industry: newMarket.industry,
-          ipoYear: newMarket.ipoYear,
-          marketCap: newMarket.marketCap,
-          sector: newMarket.sector,
-          volume: newMarket.volume,
-          netChage: newMarket.netChage,
-          netChangePercent: newMarket.netChangePercent,
-          lastPrice: newMarket.lastPrice,
-          createdAt: newMarket.createdAt,
-          updatedAt: newMarket.updatedAt,
-        });
-      } catch (err) {
-        return res.status(500).send({ general: 'Internal server error' });
-      }
-    } else {
-      return res.status(400).send({ general: 'Invalid input data' });
+      return res.send({
+        id: newMarket._id,
+        symbol: newMarket.symbol,
+        name: newMarket.name,
+        country: newMarket.country,
+        industry: newMarket.industry,
+        ipoYear: newMarket.ipoYear,
+        marketCap: newMarket.marketCap,
+        sector: newMarket.sector,
+        volume: newMarket.volume,
+        netChage: newMarket.netChage,
+        netChangePercent: newMarket.netChangePercent,
+        lastPrice: newMarket.lastPrice,
+        createdAt: newMarket.createdAt,
+        updatedAt: newMarket.updatedAt,
+      });
+    } catch (err) {
+      return res.status(500).send({ general: 'Internal server error' });
     }
   } else {
     return res.status(400).send({ general: 'Input data is empty' });
