@@ -9,7 +9,7 @@
 npm i
 ```
 
-With yarn
+- With yarn
 
 ```
 yarn
@@ -23,7 +23,7 @@ yarn
 npm start
 ```
 
-With yarn
+- With yarn
 
 ```
 yarn start
