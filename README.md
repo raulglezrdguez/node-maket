@@ -140,4 +140,4 @@ yarn start
 
 #### Screenshot
 
-![screenshot]('/screenshots/screenshot.jpg)
+![screenshot](/public/screenshots/screenshot.jpg)
