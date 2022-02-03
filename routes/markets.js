@@ -2,11 +2,31 @@ const express = require('express');
 const router = express.Router();
 
 const marketAjvSchema = require('../schema/market');
+const marketPatchAjvSchema = require('../schema/marketPatch');
 
 const Market = require('../models/market');
 
 // const ObjectId = require('mongoose').Types.ObjectId;
 const createPdf = require('../utils/createPdf');
+
+// constants
+const fieldsArr = [
+  'id',
+  'symbol',
+  'name',
+  'country',
+  'industry',
+  'ipoYear',
+  'marketCap',
+  'sector',
+  'volume',
+  'netChange',
+  'netChangePercent',
+  'lastPrice',
+  'createdAt',
+  'updatedAt',
+];
+const fieldsStringArr = ['symbol', 'name', 'country', 'industry', 'sector'];
 
 // new single market
 router.post('/markets', async function (req, res) {
@@ -30,7 +50,7 @@ router.post('/markets', async function (req, res) {
         newMarket = await newMarket.save();
 
         return res.status(200).send({
-          id: newMarket._id,
+          id: newMarket.id,
           symbol: newMarket.symbol,
           name: newMarket.name,
           country: newMarket.country,
@@ -47,7 +67,7 @@ router.post('/markets', async function (req, res) {
         });
       }
     } catch (err) {
-      return res.status(500).send({ error: 'Internal server error' });
+      return res.status(500).send({ error: 'Internal server error: ' + err });
     }
   } else {
     return res.status(400).send({ error: 'Input data is empty' });
@@ -74,7 +94,7 @@ router.post('/markets/bulk', async function (req, res) {
         if (markets && markets.length > 0) {
           return res
             .status(400)
-            .send({ error: 'Market with some id already exists' });
+            .send({ error: 'Market with id already exists' });
         } else {
           const newMarkets = await Market.insertMany(bulk);
 
@@ -98,7 +118,7 @@ router.post('/markets/bulk', async function (req, res) {
           return res.status(200).send(newMarketsToSend);
         }
       } catch (err) {
-        return res.status(500).send({ error: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error: ' + err });
       }
     } else {
       return res
@@ -121,6 +141,11 @@ router.patch('/markets/:id', async function (req, res) {
       let market = await Market.findOne({ id: marketId });
       if (market) {
         if (req.body) {
+          const valid = marketPatchAjvSchema(req.body);
+          if (!valid) {
+            const errors = marketPatchAjvSchema.errors;
+            return res.status(400).send(errors);
+          }
           const {
             symbol,
             name,
@@ -172,7 +197,9 @@ router.patch('/markets/:id', async function (req, res) {
               updatedAt: market.updatedAt,
             });
           } catch (err) {
-            return res.status(500).send({ error: 'Internal server error' });
+            return res
+              .status(500)
+              .send({ error: 'Internal server error: ' + err });
           }
         } else {
           return res.status(400).send({ error: 'Data to update is needed' });
@@ -199,6 +226,11 @@ router.put('/markets/:id', async function (req, res) {
         let market = await Market.findOne({ id: marketId });
         if (market) {
           // update
+          const valid = marketPatchAjvSchema(req.body);
+          if (!valid) {
+            const errors = marketPatchAjvSchema.errors;
+            return res.status(400).send(errors);
+          }
           const {
             symbol,
             name,
@@ -249,7 +281,9 @@ router.put('/markets/:id', async function (req, res) {
               updatedAt: market.updatedAt,
             });
           } catch (err) {
-            return res.status(500).send({ error: 'Internal server error' });
+            return res
+              .status(500)
+              .send({ error: 'Internal server error: ' + err });
           }
         } else {
           // post
@@ -259,34 +293,32 @@ router.put('/markets/:id', async function (req, res) {
             return res.status(400).send(errors);
           }
 
-          const id = req.body.id;
-          const market = await Market.findOne({ id });
-          if (market) {
-            return res
-              .status(400)
-              .send({ error: `Market with id: ${id}, already exists` });
-          } else {
-            let newMarket = new Market({ ...req.body });
-
-            newMarket = await newMarket.save();
-
-            return res.status(200).send({
-              id: newMarket.id,
-              symbol: newMarket.symbol,
-              name: newMarket.name,
-              country: newMarket.country,
-              industry: newMarket.industry,
-              ipoYear: newMarket.ipoYear,
-              marketCap: newMarket.marketCap,
-              sector: newMarket.sector,
-              volume: newMarket.volume,
-              netChange: newMarket.netChange,
-              netChangePercent: newMarket.netChangePercent,
-              lastPrice: newMarket.lastPrice,
-              createdAt: newMarket.createdAt,
-              updatedAt: newMarket.updatedAt,
+          if (marketId !== req.body.id) {
+            return res.status(400).send({
+              error: `Param id: ${marketId} and body id: ${req.body.id}, don't match`,
             });
           }
+
+          let newMarket = new Market({ ...req.body });
+
+          newMarket = await newMarket.save();
+
+          return res.status(200).send({
+            id: newMarket.id,
+            symbol: newMarket.symbol,
+            name: newMarket.name,
+            country: newMarket.country,
+            industry: newMarket.industry,
+            ipoYear: newMarket.ipoYear,
+            marketCap: newMarket.marketCap,
+            sector: newMarket.sector,
+            volume: newMarket.volume,
+            netChange: newMarket.netChange,
+            netChangePercent: newMarket.netChangePercent,
+            lastPrice: newMarket.lastPrice,
+            createdAt: newMarket.createdAt,
+            updatedAt: newMarket.updatedAt,
+          });
         }
       } else {
         return res.status(400).send({ error: 'Data to update is needed' });
@@ -318,7 +350,7 @@ router.delete('/markets/:id', async function (req, res) {
           return res.status(404).send({ error: 'Market not found' });
         }
       } catch (err) {
-        return res.status(500).send({ error: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error: ' + err });
       }
     } else {
       return res.status(400).send({ error: 'Invalid id' });
@@ -335,16 +367,68 @@ router.get('/markets/:id', async function (req, res) {
     const marketId = parseInt(id);
 
     if (!isNaN(marketId)) {
+      const { pdf, fields } = req.query;
+      let _pdf = false;
+      let _fields = fieldsArr.join(' ');
+
+      if (fields) {
+        const flds = fields.split(',');
+        if (flds.length > 0) {
+          if (flds.some((f) => !fieldsArr.includes(f.trim()))) {
+            return res.status(400).send({
+              error: 'fields should contain valid fields; example: id,name',
+            });
+          } else {
+            _fields = flds.join(' ');
+          }
+        } else {
+          return res.status(400).send({
+            error:
+              'fields should be an array of valid fields; example: id,name',
+          });
+        }
+      }
+
+      if (pdf) {
+        if (['true', 'false'].includes(pdf)) {
+          _pdf = pdf === 'true' ? true : false;
+        } else {
+          return res.status(400).send({
+            error: "pdf should be 'true' or 'false'",
+          });
+        }
+      }
+
       try {
-        const market = await Market.findOne({ id: marketId }).select('-_id');
+        const market = await Market.findOne({ id: marketId }).select(
+          `-_id ${_fields}`
+        );
 
         if (market) {
-          return res.status(200).send(market);
+          if (_pdf) {
+            const pdfDoc = await createPdf([market]);
+            if (pdfDoc) {
+              res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': 'attachment; filename="markets.pdf"',
+              });
+
+              const download = Buffer.from(pdfDoc.toString('utf-8'), 'base64');
+
+              return res.end(download);
+            } else {
+              return res.status(500).send({
+                error: 'error creating pdf in memory',
+              });
+            }
+          } else {
+            return res.status(200).send(market);
+          }
         } else {
           return res.status(404).send({ error: 'Market not found' });
         }
       } catch (err) {
-        return res.status(500).send({ error: 'Internal server error' });
+        return res.status(500).send({ error: 'Internal server error: ' + err });
       }
     } else {
       return res.status(400).send({ error: 'Invalid param id' });
@@ -377,23 +461,7 @@ router.get('/markets', async function (req, res) {
       filter_by,
       filter_values,
     } = req.query;
-    const fieldsArr = [
-      'id',
-      'symbol',
-      'name',
-      'country',
-      'industry',
-      'ipoYear',
-      'marketCap',
-      'sector',
-      'volume',
-      'netChange',
-      'netChangePercent',
-      'lastPrice',
-      'createdAt',
-      'updatedAt',
-    ];
-    const fieldsStringArr = ['symbol', 'name', 'country', 'industry', 'sector'];
+
     let _page = 0;
     let _limit = 10;
     let _sortBy = 'id';
@@ -553,7 +621,7 @@ router.get('/markets', async function (req, res) {
         });
       }
     } catch (err) {
-      return res.status(500).send({ error: 'Internal server error' });
+      return res.status(500).send({ error: 'Internal server error: ' + err });
     }
   } else {
     return res

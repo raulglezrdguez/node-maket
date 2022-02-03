@@ -60,7 +60,7 @@ yarn start
 {
     "bulk": [
         {
-            "id": "1",
+            "id": 1,
             "symbol": "efg",
             "name": "efg",
             "country": "efg",
@@ -90,7 +90,7 @@ yarn start
 }
 ```
 
-- Returns the same market; "a" is not a market field
+- Returns error; "a" is not a market field
 
 ```
 {"a": 10}
@@ -113,6 +113,16 @@ yarn start
 ### GET: http://localhost:4000/markets/{id}
 
 #### if {id} exists return the market else error
+
+#### Optional query parameters
+
+- pdf: true or false
+- fields: valid fields separated by commas; example: id,name
+
+#### Default query parameters
+
+- pdf: false
+- fields: contains all fields
 
 ### GET: http://localhost:4000/markets/?page={page}&limit={limit}...
 
@@ -141,3 +151,7 @@ yarn start
 #### Screenshot
 
 ![screenshot](/public/screenshots/screenshot.jpg)
+
+![screenshot1](/public/screenshots/screenshot1.jpg)
+
+![screenshot2](/public/screenshots/screenshot2.jpg)
