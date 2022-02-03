@@ -3,10 +3,10 @@ const getStream = require('get-stream');
 
 const createPdf = async (markets) => {
   const doc = new PDFDocument();
-  doc.fontSize(14).text('Markets Report.');
+  doc.fontSize(22).text('Markets Report.');
 
   for (let market of markets) {
-    doc.fontSize(14).text(`- ${market.name}`);
+    doc.fontSize(14).text('------------');
     doc.fontSize(14).text(JSON.stringify(market));
   }
   doc.end();

@@ -123,6 +123,7 @@ yarn start
 - sort_by: a valid field, for example: id
 - sort_order: asc or desc
 - pdf: true or false
+- fields: valid fields separated by commas; example: id,name
 
 #### Default query parameters
 
@@ -131,3 +132,4 @@ yarn start
 - sort_by: id
 - sort_order: asc
 - pdf: false
+- fields: contains all fields

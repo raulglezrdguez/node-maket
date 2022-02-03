@@ -363,12 +363,29 @@ router.get('/markets', async function (req, res) {
      * sort_by: a valid field
      * sort_order: 'asc' or 'desc'
      */
-    const { page, limit, sort_by, sort_order, pdf } = req.query;
+    const { page, limit, sort_by, sort_order, pdf, fields } = req.query;
+    const fieldsArr = [
+      'id',
+      'symbol',
+      'name',
+      'country',
+      'industry',
+      'ipoYear',
+      'marketCap',
+      'sector',
+      'volume',
+      'netChange',
+      'netChangePercent',
+      'lastPrice',
+      'createdAt',
+      'updatedAt',
+    ];
     let _page = 0;
     let _limit = 10;
     let _sortBy = 'id';
     let _sortOrder = '+';
     let _pdf = false;
+    let _fields = fieldsArr.join(' ');
 
     if (page) {
       if (!isNaN(parseInt(page)) && parseInt(page) >= 0) {
@@ -391,24 +408,7 @@ router.get('/markets', async function (req, res) {
     }
 
     if (sort_by) {
-      if (
-        [
-          'id',
-          'symbol',
-          'name',
-          'country',
-          'industry',
-          'ipoYear',
-          'marketCap',
-          'sector',
-          'volume',
-          'netChange',
-          'netChangePercent',
-          'lastPrice',
-          'createdAt',
-          'updatedAt',
-        ].includes(sort_by)
-      ) {
+      if (fieldsArr.includes(sort_by)) {
         _sortBy = sort_by;
       } else {
         return res.status(400).send({
@@ -423,6 +423,23 @@ router.get('/markets', async function (req, res) {
       } else {
         return res.status(400).send({
           error: "sort_order should be 'asc' or 'desc'",
+        });
+      }
+    }
+
+    if (fields) {
+      const flds = fields.split(',');
+      if (flds.length > 0) {
+        if (flds.some((f) => !fieldsArr.includes(f))) {
+          return res.status(400).send({
+            error: 'fields should contain valid fields; example: id,name',
+          });
+        } else {
+          _fields = flds.join(' ');
+        }
+      } else {
+        return res.status(400).send({
+          error: 'fields should be an array of valid fields; example: id,name',
         });
       }
     }
@@ -443,9 +460,7 @@ router.get('/markets', async function (req, res) {
         .sort(`${_sortOrder}${_sortBy}`)
         .skip(_page * _limit)
         .limit(_limit)
-        .select(
-          '-_id id symbol name country industry ipoYear marketCap sector volume netChange netChangePercent lastPrice createdAt updatedAt'
-        );
+        .select(`-_id ${_fields}`);
 
       if (_pdf) {
         const pdfDoc = await createPdf(markets);
