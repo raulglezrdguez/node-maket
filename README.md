@@ -124,6 +124,8 @@ yarn start
 - sort_order: asc or desc
 - pdf: true or false
 - fields: valid fields separated by commas; example: id,name
+- filter_by: valid string type fields (symbol, name, country, industry or sector) separated by commas; example: name,country
+- filter_values: array of strings separated by commas
 
 #### Default query parameters
 
@@ -133,3 +135,9 @@ yarn start
 - sort_order: asc
 - pdf: false
 - fields: contains all fields
+- filter_by: empty array []
+- filter_values: empty array []
+
+#### Screenshot
+
+![screenshot]('/screenshots/screenshot.jpg)

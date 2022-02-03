@@ -362,8 +362,21 @@ router.get('/markets', async function (req, res) {
      * limit: markets for page -> 1, 2, 3 ...
      * sort_by: a valid field
      * sort_order: 'asc' or 'desc'
+     * pdf: true or false
+     * fields: array of fields separated by commas
+     * filter_by: array of fields separated by commas
+     * filter_values: array of values separated by commas
      */
-    const { page, limit, sort_by, sort_order, pdf, fields } = req.query;
+    const {
+      page,
+      limit,
+      sort_by,
+      sort_order,
+      pdf,
+      fields,
+      filter_by,
+      filter_values,
+    } = req.query;
     const fieldsArr = [
       'id',
       'symbol',
@@ -380,12 +393,15 @@ router.get('/markets', async function (req, res) {
       'createdAt',
       'updatedAt',
     ];
+    const fieldsStringArr = ['symbol', 'name', 'country', 'industry', 'sector'];
     let _page = 0;
     let _limit = 10;
     let _sortBy = 'id';
     let _sortOrder = '+';
     let _pdf = false;
     let _fields = fieldsArr.join(' ');
+    let _filter_by = [];
+    let _filter_values = [];
 
     if (page) {
       if (!isNaN(parseInt(page)) && parseInt(page) >= 0) {
@@ -454,9 +470,58 @@ router.get('/markets', async function (req, res) {
       }
     }
 
+    if (filter_by) {
+      const flds = filter_by.split(',');
+      if (flds.length > 0) {
+        if (flds.some((f) => !fieldsStringArr.includes(f))) {
+          return res.status(400).send({
+            error:
+              'filter_by should contain valid fields; example: symbol,name,country,industry,sector',
+          });
+        } else {
+          _filter_by = flds.slice(0);
+        }
+      } else {
+        return res.status(400).send({
+          error:
+            'filter_by should be an array of valid fields; example: symbol,name,country,industry,sector',
+        });
+      }
+    }
+
+    if (filter_values) {
+      const flds = filter_values.split(',');
+      if (flds.length > 0) {
+        _filter_values = flds.slice(0);
+      } else {
+        return res.status(400).send({
+          error:
+            'filter_values should be an array of strings; example: John,Cuba',
+        });
+      }
+    }
+
+    if (_filter_by.length !== _filter_values.length) {
+      return res.status(400).send({
+        error: 'filter_by and filter_values should be of the same length',
+      });
+    }
+
     try {
-      const total = await Market.countDocuments({});
-      const markets = await Market.find({})
+      let find = [];
+      for (let i = 0; i < _filter_by.length; i++) {
+        const item = {};
+        item[_filter_by[i]] = { $regex: _filter_values[i], $options: 'i' };
+        find.push(item);
+      }
+      if (find.length > 0) {
+        find = { $or: find };
+      } else {
+        find = {};
+      }
+
+      const total = await Market.countDocuments(find);
+      const markets = await Market.find(find)
         .sort(`${_sortOrder}${_sortBy}`)
         .skip(_page * _limit)
         .limit(_limit)
