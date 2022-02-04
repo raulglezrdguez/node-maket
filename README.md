@@ -148,7 +148,7 @@ yarn start
 - filter_by: empty array []
 - filter_values: empty array []
 
-#### Screenshot
+#### Screenshots
 
 ![screenshot](/public/screenshots/screenshot.jpg)
 
